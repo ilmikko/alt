@@ -1,33 +1,33 @@
- (function(){
-        var extend=function(a,b){
-                for (var g in b){a[g]=b[g];} return a;
-        }
-        var type=function(a){
-                if (a instanceof Array) return "enumerable";
-                else if (a instanceof Node) return "node";
-                var t=typeof a;
-                if (t==="object"&&a){
-                        if (!isNaN(a.length)&&a.length>=0) return "enumerable";
-                        if (!isNaN(a.nodeType)) return "node";
-                }
-                return t;
-        };
+(function(){
+	var extend=function(a,b){
+		for (var g in b){a[g]=b[g];} return a;
+	}
+	var type=function(a){
+		if (a instanceof Array) return "enumerable";
+		else if (a instanceof Node) return "node";
+		var t=typeof a;
+		if (t==="object"&&a){
+			if (!isNaN(a.length)&&a.length>=0) return "enumerable";
+			if (!isNaN(a.nodeType)) return "node";
+		}
+		return t;
+	};
 
-        var get=function get(anything,o){
-                var t=type(anything);
-                if (anything==null) return;
+	var get=function get(anything,o){
+		var t=type(anything);
+		if (anything==null) return;
 
-                if (t==="node") {
-                        return new Element(anything);
-                } else if (t==="enumerable") {
-                        return alt.apply(this,anything);
-                } else if (t==="string") {
+		if (t==="node") {
+			return new Element(anything);
+		} else if (t==="enumerable") {
+			return alt.apply(this,anything);
+		} else if (t==="string") {
 			return alt.apply(this,toNodes(anything));
-                } else if (t==="object") {
-                        if (anything._isAltElement) return anything;
-                        else throw new Error("Cannot parse object. "+JSON.stringify(anything));
-                } else throw new Error("Cannot parse type: %s",t);
-        }
+		} else if (t==="object") {
+			if (anything._isAltElement) return anything;
+			else throw new Error("Cannot parse object. "+JSON.stringify(anything));
+		} else throw new Error("Cannot parse type: %s",t);
+	}
 
 	var toNodes=function(anything){
 		var t=type(anything);
@@ -71,28 +71,28 @@
 		return str.replace(/[A-Z]/g,function(_){return '-'+_.toLowerCase();});
 	}
 
-        var alt=function(anything){
+	var alt=function(anything){
 		var t=type(anything);
-                if (arguments.length==1){
-                        return get(anything)||new Group();
-                }else{
-                        var o=new Group();
-                        for (var g=0,glen=arguments.length;g<glen;g++){
-                                var e=get(arguments[g]);
-                                if (e) Group.addElement(o,e);
-                        }
-                        return o;
-                }
-        }
-        extend(alt,{
-                extend:extend,
+		if (arguments.length==1){
+			return get(anything)||new Group();
+		}else{
+			var o=new Group();
+			for (var g=0,glen=arguments.length;g<glen;g++){
+				var e=get(arguments[g]);
+				if (e) Group.addElement(o,e);
+			}
+			return o;
+		}
+	}
+	extend(alt,{
+		extend:extend,
 		load:function(callback){
 			window.addEventListener('load',callback);
 		},
 		supports:{},
 		get:get,
 		toNodes:toNodes
-        });
+	});
 
 	// Check experimental
 
@@ -142,12 +142,12 @@
 		alt.supports.fullscreen=false;
 	}
 
-        function Element(e){
-                this.e=e;
+	function Element(e){
+		this.e=e;
 		this._event={};
-        }
-        Element.prototype={
-                _isAltElement:true,
+	}
+	Element.prototype={
+		_isAltElement:true,
 		_toNode:function(){
 			return this.e;
 		},
@@ -163,58 +163,62 @@
 			}
 			return this;
 		},
-                clear:function(){
-                        var e=this.e;
-                        while(e.firstChild) e.removeChild(e.firstChild);
-                        return this;
-                },
+		clear:function(){
+			var e=this.e;
+			while(e.firstChild) e.removeChild(e.firstChild);
+			return this;
+		},
 		click:function(){
 			return this.trigger('click');
 		},
-                checked:function(v){
-                        return this.prop("checked",v);
-                },
-                children:function(){
-                        return alt(this.e.children);
-                },
-                css:function(o,finish){
-                        /*
-                                finish is a callback function that gets executed whenever
-                                the css transition gets finished.
+		checked:function(v){
+			return this.prop("checked",v);
+		},
+		children:function(){
+			return alt(this.e.children);
+		},
+		css:function(o,finish){
+			/*
+				finish is a callback function that gets executed whenever
+				the css transition gets finished.
 
-                                the transition isn't always instantaneous - as we might have a "transition" property of 1 second, etc.
-                        */
-                        var attach=false;
-                        if (finish){
-                                // Check here if we need to attach an event listener.
-                                var c=window.getComputedStyle(this.e),ps=c.transitionProperty.split(/,\s+/);
+				the transition isn't always instantaneous - as we might have a "transition" property of 1 second, etc.
+				*/
+			var attach=false;
+			if (finish){
+				// Check here if we need to attach an event listener.
+				var c=window.getComputedStyle(this.e),ps=c.transitionProperty.split(/,\s+/);
 
-                                // if any of the properties in ps are keys in o, we need to attach an event listener
-                                for (var g=0,glen=ps.length;g<glen;g++){
-                                        if (ps[g] in o){
-                                                attach=true;
-                                                break;
-                                        }
-                                }
+				// if any of the properties in ps are keys in o, we need to attach an event listener
+				for (var g=0,glen=ps.length;g<glen;g++){
+					if (ps[g] in o){
+						attach=true;
+						break;
+					}
+				}
 
-                                if (attach) {
-                                        // Attach a one time event
-                                        var self=this;
-                                        this.one("webkitTransitionEnd",function(){
-                                                finish.call(self);
-                                        });
-                                }
-                        }
+				if (attach) {
+					// Attach a one time event
+					var self=this;
+					this.one("webkitTransitionEnd",function(){
+						finish.call(self);
+					});
+				}
+			}
 
-                        extend(this.e.style,o);
+			extend(this.e.style,o);
 
-                        if (finish&&!attach){
-                                // if we have nothing to attach to, we can fire the event immediately.
-                                finish.call(this);
-                        }
+			if (finish&&!attach){
+				// if we have nothing to attach to, we can fire the event immediately.
+				finish.call(this);
+			}
 
-                        return this;
-                },
+			return this;
+		},
+		extend:function(obj){
+			extend(this,obj);
+			return this;
+		},
 		data:function(data){
 			for (var id in data) this.e.setAttribute('data-'+fromCamelCase(id),data[id]);
 			return this;
@@ -236,19 +240,19 @@
 
 			return this;
 		},
-                get:function(query){
-                        try{
-                                return alt(this.e.querySelectorAll(query));
-                        }
-                        catch(err){
-                                console.error("Selector '%s' throws an error",query);
-                                console.log(err);
-                        }
-                },
-                html:function(html){
-                        return this.prop('innerHTML',html);
-                },
-                on:function(name,callback){
+		get:function(query){
+			try{
+				return alt(this.e.querySelectorAll(query));
+			}
+			catch(err){
+				console.error("Selector '%s' throws an error",query);
+				console.log(err);
+			}
+		},
+		html:function(html){
+			return this.prop('innerHTML',html);
+		},
+		on:function(name,callback){
 			// Ease of use
 			if (type(name)=='enumerable'){
 				for (var g=0,gg=name.length;g<gg;g++) this.on(name[g],callback);
@@ -258,17 +262,17 @@
 			var self=this;
 			if (!(name in this._event)) this._event[name]=[];
 
-			wrapper=function(evt){callback.call(self,evt);};
+			var wrapper=function(evt){callback.call(self,evt);};
 			this.e.addEventListener(name,wrapper);
 
 			this._event[name].push({name:name,callback:callback,wrapper:wrapper});
 
-                        return this;
-                },
+			return this;
+		},
 		off:function(name,callback){
 			// Ease of use
 			if (type(name)=='enumerable'){
-				for (var g=0,gg=name.length;g<gg;g++) this.on(name[g],callback);
+				for (var g=0,gg=name.length;g<gg;g++) this.off(name[g],callback);
 				return this;
 			}
 
@@ -299,34 +303,34 @@
 			}
 			return this;
 		},
-                one:function(name,callback){
+		one:function(name,callback){
 			// Ease of use
 			if (type(name)=='enumerable'){
-				for (var g=0,gg=name.length;g<gg;g++) this.on(name[g],callback);
+				for (var g=0,gg=name.length;g<gg;g++) this.one(name[g],callback);
 				return this;
 			}
 
-                        this.on(name,function listen(evt){
-                                this.off(name,listen);
-                                callback.call(this,evt);
-                        });
-                        return this;
-                },
-                prop:function(id,v){
+			this.on(name,function listen(evt){
+				this.off(name,listen);
+				callback.call(this,evt);
+			});
+			return this;
+		},
+		prop:function(id,v){
 			// Allow people to do obj.prop({key:value,key2:value2}) for easy assignment (never returns anything)
 			if (typeof id==='object'&&v==null) {
 				for (var g in id) this.prop(g,id[g]);
 				return this;
 			}
 
-                        var t=typeof v;
-                        if (t==="string"||t==="boolean"||t==="number"){
-                                this.e[id]=v;
-                        }else{
-                                return this.e[id];
-                        }
-                        return this;
-                },
+			var t=typeof v;
+			if (t==="string"||t==="boolean"||t==="number"){
+				this.e[id]=v;
+			}else{
+				return this.e[id];
+			}
+			return this;
+		},
 		play:function(){
 			return this.trigger('play');
 		},
@@ -368,25 +372,25 @@
 			}
 			return this;
 		},
-                addClass:function(name){
+		addClass:function(name){
 			if (arguments.length==1){
 				this.e.classList.add(name);
 			}else{
 				for (var g=0,glen=arguments.length;g<glen;g++) this.addClass(arguments[g]);
 			}
 			return this;
-                },
+		},
 		hasClass:function(name){
 			return this.e.classList.contains(name);
 		},
-                removeClass:function(name){
+		removeClass:function(name){
 			if (arguments.length==1){
 				this.e.classList.remove(name);
 			}else{
 				for (var g=0,glen=arguments.length;g<glen;g++) this.removeClass(arguments[g]);
 			}
-                        return this;
-                },
+			return this;
+		},
 		select:function(){
 			return this.trigger('select');
 		},
@@ -398,9 +402,9 @@
 			}
 			return this;
 		},
-                value:function(txt){
-                        return this.prop("value",txt);
-                },
+		value:function(txt){
+			return this.prop("value",txt);
+		},
 		with:function(properties){
 			var success=(function iterate(o,p){
 				for (var g in p){
@@ -416,12 +420,12 @@
 			})(this.e,properties);
 			if (success) return this; else return new Group();
 		}
-        };
+	};
 
-        function Group(){
-                this.length=0;
-        }
-        Group.prototype={
+	function Group(){
+		this.length=0;
+	}
+	Group.prototype={
 		_isAltElement:true,
 		_isAltGroup:true,
 		_toNode:function(){
@@ -431,12 +435,12 @@
 			}
 			return df;
 		},
-                each:function(callback){
-                        for (var g=0,glen=this.length;g<glen;g++){
-                                callback.call(this[g],g);
-                        }
-                        return this;
-                },
+		each:function(callback){
+			for (var g=0,glen=this.length;g<glen;g++){
+				callback.call(this[g],g);
+			}
+			return this;
+		},
 		with:function(obj){
 			var matches=new Group();
 			this.each(function(){
@@ -444,39 +448,39 @@
 			});
 			return matches;
 		}
-        };
-        extend(Group,{
-                addElement:function(o,e){
-                        o[o.length++]=e;
-                },
-                addElements:function(o,e){
-                        for (var g=0,glen=e.length;g<glen;g++){
-                                o[o.length++]=e[g];
-                        }
-                },
-                addGroup:function(o,e){
-                        e.each(function(){
-                                o[o.length++]=this;
-                        });
-                }
-        });
+	};
+	extend(Group,{
+		addElement:function(o,e){
+			o[o.length++]=e;
+		},
+		addElements:function(o,e){
+			for (var g=0,glen=e.length;g<glen;g++){
+				o[o.length++]=e[g];
+			}
+		},
+		addGroup:function(o,e){
+			e.each(function(){
+				o[o.length++]=this;
+			});
+		}
+	});
 
-        var p=Element.prototype;
-        for (var g in p){
-                if (g in Group.prototype) continue;
-                Group.prototype[g]=(function(g){
-                        return function(){
-                                var _args=arguments;
-                                return this.each(function(){
-                                        this[g].apply(this,_args);
-                                });
-                        }
-                })(g);
-        }
+	var p=Element.prototype;
+	for (var g in p){
+		if (g in Group.prototype) continue;
+		Group.prototype[g]=(function(g){
+			return function(){
+				var _args=arguments;
+				return this.each(function(){
+					this[g].apply(this,_args);
+				});
+			}
+		})(g);
+	}
 
-        if (!("$" in window)){
-                window['$']=alt;
-        } else if (!(alt in window)){
-                window['alt']=alt;
-        }
+	if (!("$" in window)){
+		window['$']=alt;
+	} else if (!(alt in window)){
+		window['alt']=alt;
+	}
 })();
