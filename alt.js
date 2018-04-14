@@ -316,6 +316,38 @@
 			});
 			return this;
 		},
+		fire:function(name,evt){
+			// Ease of use
+			if (type(name)=='enumerable'){
+				for (var g=0,gg=name.length;g<gg;g++) this.fire(name[g],evt);
+				return this;
+			}
+
+			if (!evt) evt={};
+
+			// Fire custom events as well, in which case do not fire using DOM
+			if (name in this._event){
+				var events = this._event[name];
+				for (var g=0,gg=events.length;g<gg;g++) events[g].wrapper(evt);
+			}else{
+				// Fall back to event firing
+				if (document.createEvent) {
+					var event = document.createEvent("HTMLEvents");
+					event.initEvent(name, true, true);
+				}else{
+					var event = document.createEventObject();
+					event.eventType = name;
+				}
+
+				event.eventName = name;
+
+				if (document.createEvent) {
+					this.e.dispatchEvent(event);
+				}else{
+					this.e.fireEvent("on"+event.eventType, event);
+				}
+			}
+		},
 		prop:function(id,v){
 			// Allow people to do obj.prop({key:value,key2:value2}) for easy assignment (never returns anything)
 			if (typeof id==='object'&&v==null) {
