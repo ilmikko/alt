@@ -15,12 +15,13 @@
 
 	var get=function get(anything,o){
 		var t=type(anything);
-		if (anything==null) return;
+		if (anything==null) return new Group();
 
 		if (t==="node") {
 			return new Element(anything);
 		} else if (t==="enumerable") {
 			// Doesn't make any sense, should be $$
+			if (anything.length==0) return new Group();
 			return get(anything[0]);
 		} else if (t==="string") {
 			var nodes=toNodes(anything);
@@ -268,7 +269,7 @@
 		},
 		get:function(){
 			try{
-				return alt.apply(alt,arguments);
+				return get(this.e.querySelector.apply(this.e,arguments));
 			}
 			catch(err){
 				console.error("Selector '%s' throws an error",query);
@@ -278,7 +279,7 @@
 		},
 		getMany:function(){
 			try{
-				return get_many.apply(alt,arguments);
+				return get_many(this.e.querySelectorAll.apply(this.e,arguments));
 			}
 			catch(err){
 				console.error("Selector '%s' throws an error",query);
