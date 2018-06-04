@@ -181,6 +181,9 @@
 		$:function(){
 			return this.get.apply(this,arguments);
 		},
+		$$:function(){
+			return this.getMany.apply(this,arguments);
+		},
 		append:function(){
 			for (var g=0,glen=arguments.length;g<glen;g++){
 				var nodes=toNodes(arguments[g]);
@@ -423,6 +426,10 @@
 		reflow:function(){
 			this.e.offsetHeight; // Triggers a reflow
 			// TODO: Could this update a bounding rect? Might as well.
+			return this;
+		},
+		tee:function(callback){
+			callback.call(this,this);
 			return this;
 		},
 		text:function(text){
