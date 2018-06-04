@@ -247,8 +247,14 @@
 			return this;
 		},
 		data:function(data){
-			for (var id in data) this.e.setAttribute('data-'+fromCamelCase(id),data[id]);
-			return this;
+			if (type(data)==="string"){
+				// GET
+				return this.e.getAttribute('data-'+fromCamelCase(data));
+			} else {
+				// SET
+				for (var id in data) this.e.setAttribute('data-'+fromCamelCase(id),data[id]);
+				return this;
+			}
 		},
 		focus:function(){
 			return this.trigger('focus');
