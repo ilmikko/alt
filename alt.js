@@ -377,7 +377,7 @@
 			return this;
 		},
 		text:function(text){
-			return this.prop('textContent',text);
+			return this.prop('textContent',text||"");
 		},
 		set:function(o){
 			for (var g in o) {
