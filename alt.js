@@ -20,13 +20,37 @@
 		if (t==="node") {
 			return new Element(anything);
 		} else if (t==="enumerable") {
-			return alt.apply(this,anything);
+			// Doesn't make any sense, should be $$
+			return get(anything[0]);
 		} else if (t==="string") {
-			return alt.apply(this,toNodes(anything));
+			var nodes=toNodes(anything);
+			if (nodes.length==0) return new Group();
+			else return new Element(nodes[0]);
 		} else if (t==="object") {
 			if (anything._isAltElement) return anything;
 			else throw new Error("Cannot parse object. "+JSON.stringify(anything));
-		} else throw new Error("Cannot parse type: %s",t);
+		} else throw new Error("Cannot parse type: "+t);
+	}
+
+	var get_many=function get_many(){
+		var o=new Group();
+		for (var g=0,gg=arguments.length;g<gg;g++){
+			var anything=arguments[g];
+
+			var t=type(anything);
+
+			if (t==="node") {
+				Group.addElement(o,get(anything));
+			} else if (t==="enumerable") {
+				Group.addElements(o,get_many.apply(this,anything));
+			} else if (t==="string") {
+				Group.addElements(o,toNodes(anything));
+			} else if (t==="object") {
+				if (anything._isAltElement) Group.addElement(o,anything);
+				else throw new Error("Cannot parse object. "+JSON.stringify(anything));
+			} else throw new Error("Cannot parse type: "+t);
+		}
+		return o;
 	}
 
 	var toNodes=function(anything){
@@ -72,9 +96,11 @@
 	}
 
 	var alt=function(anything){
-		var t=type(anything);
+		return get(anything);
+
+		// Some old code...
 		if (arguments.length==1){
-			return get(anything)||new Group();
+			return get(anything);
 		}else{
 			var o=new Group();
 			for (var g=0,glen=arguments.length;g<glen;g++){
@@ -240,13 +266,24 @@
 
 			return this;
 		},
-		get:function(query){
+		get:function(){
 			try{
-				return alt(this.e.querySelectorAll(query));
+				return alt.apply(alt,arguments);
 			}
 			catch(err){
 				console.error("Selector '%s' throws an error",query);
 				console.log(err);
+				return this;
+			}
+		},
+		getMany:function(){
+			try{
+				return get_many.apply(alt,arguments);
+			}
+			catch(err){
+				console.error("Selector '%s' throws an error",query);
+				console.log(err);
+				return this;
 			}
 		},
 		html:function(html){
@@ -517,7 +554,19 @@
 
 	if (!("$" in window)){
 		window['$']=alt;
-	} else if (!(alt in window)){
+	} else if (!("alt" in window)){
 		window['alt']=alt;
+		console.warn("Alt couldn't hook up to window.$, using window.alt.");
+	} else {
+		console.warn("Alt couldn't hook up to either window.$ or window.alt.");
+	}
+
+	if (!("$$" in window)){
+		window['$$']=get_many;
+	} else if (!("alt_many" in window)){
+		window['alt_many']=get_many;
+		console.warn("Alt couldn't hook up to window.$$, using window.alt_many.");
+	} else {
+		console.warn("Alt couldn't hook up to either window.$$ or window.alt_many.");
 	}
 })();
