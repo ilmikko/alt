@@ -376,6 +376,11 @@
 			this.e.parentNode.removeChild(this.e);
 			return this;
 		},
+		reflow:function(){
+			this.e.offsetHeight; // Triggers a reflow
+			// TODO: Could this update a bounding rect? Might as well.
+			return this;
+		},
 		text:function(text){
 			return this.prop('textContent',text||"");
 		},
